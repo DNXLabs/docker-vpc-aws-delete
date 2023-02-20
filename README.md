@@ -31,8 +31,11 @@ Set AWS auth environment variables in the file
 ```bash
 # list all vpcs that will be deleted
 $ make list-vpcs
-# delete all defaults vpcs
+
+
+# delete all defaults vpcs (This action needs confirmation check terminal)
 $ make delete-vpcs
+#
 ```
 
 
@@ -40,21 +43,34 @@ $ make delete-vpcs
 **Output:**
 
 ```
-VPC vpc-0b43a362 has been deleted from the ap-south-1 region.
-VPC vpc-b22dd5db has been deleted from the eu-west-3 region.
-VPC vpc-74b7551d has been deleted from the eu-west-2 region.
-VPC vpc-3f71855a has been deleted from the eu-west-1 region.
-VPC vpc-d58e6cbc has been deleted from the ap-northeast-2 region.
-VPC (default) was not found in the ap-northeast-1 region.
-VPC vpc-4053e625 has been deleted from the sa-east-1 region.
-VPC vpc-4c06ea25 has been deleted from the ca-central-1 region.
-VPC vpc-7b80631e has been deleted from the ap-southeast-1 region.
-VPC vpc-41db3924 has been deleted from the ap-southeast-2 region.
-VPC vpc-47ea0b2e has been deleted from the eu-central-1 region.
-VPC vpc-1c558e79 has existing resources in the us-east-1 region.
-VPC (default) was not found in the us-east-2 region.
-VPC (default) was not found in the us-west-1 region.
-VPC vpc-1839c57d has existing resources in the us-west-2 region.
+REGION:us-west-1
+VPC Id:vpc-077afe19c99727b00
+rtb-0af8d17ff020c33c6 is the main route table, continue...
+Removing sub-id:  subnet-0500a72ea9f2a320d
+acl-0c74f04df9767271c is the default NACL, continue...
+Removing sub-id:  subnet-03989cb334e9bbc60
+Removing sub-id:  subnet-00bb3cca6bd4e021a
+sg-09408dd0c80753eb7 is the default security group, continue...
+Removing vpc-id:  vpc-08ecc532f4a95eb36
+Detaching and Removing igw-id:  igw-00568594a68f32052
+Removing sub-id:  subnet-053b892606c18bbdf
+Removing sub-id:  subnet-0abf36bb5cf883867
+Removing sub-id:  subnet-056562fafe7390248
+Removing sub-id:  subnet-0164927902f6d28cd
+rtb-0674c4996fd19541a is the main route table, continue...
+Removing sub-id:  subnet-0a0e8cad9c3ebdd37
+rtb-0c5d686f1bfc1bbfb is the main route table, continue...
+acl-03d0159fa30d14b7a is the default NACL, continue...
+acl-03762bbab46a895c2 is the default NACL, continue...
+sg-022dce9be83dcb112 is the default security group, continue...
+Removing vpc-id:  vpc-0d99f70a1316b743a
+sg-08fe76c42aab483d9 is the default security group, continue...
+Removing vpc-id:  vpc-0b600a12281131e0f
+rtb-0242a5a41ab3cf132 is the main route table, continue...
+acl-0b835b5a208389f36 is the default NACL, continue...
+sg-046a9b8b0e764427a is the default security group, continue...
+Removing vpc-id:  vpc-077afe19c99727b00
+All commands finished
 ```
 
 **References:**
