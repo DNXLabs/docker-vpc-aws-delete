@@ -119,6 +119,8 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
+.env/.env.auth
+.env/.env.assume
 .env
 .venv
 env/
@@ -141,3 +143,5 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+.fleet

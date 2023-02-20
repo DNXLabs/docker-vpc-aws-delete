@@ -1,0 +1,16 @@
+version: "3.4"
+services:
+  aws:
+    image: dnxsolutions/aws-v2:latest
+    entrypoint: "/bin/bash -c"
+    env_file:
+      - .envs/.env
+      - .envs/.env.auth
+
+  app:
+    build:
+      dockerfile: Dockerfile
+    entrypoint: "/bin/bash -c"
+    working_dir: /work
+    env_file:
+      - .envs/.env.assume
