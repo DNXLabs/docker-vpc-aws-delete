@@ -1,6 +1,7 @@
 ### Remove AWS Default VPCs
 
 This Python script attempts to delete the AWS default VPC in each region.
+Customized for DNX AWS SSO
 
 **Requirements:**
 
@@ -10,16 +11,30 @@ This Python script attempts to delete the AWS default VPC in each region.
    * Botocore version: 1.10.50
 * Valid AWS API keys/profile
 
-**Setup:**
+**Instructions to Run:**
 
-Update with your AWS profile / credentials.
+### Get credentials via DNX AWS SSO
 
 ```
-main(profile = '<YOUR_PROFILE>')
+Copy credentials to terminal or paste it into .env.auth file
 ```
+
+### Change the AWS Account ID
+
+Make sure you change the <aws_account_number> to your AWS account number for AWS_ACCOUNT_NUMBER and ROLE_ARN in the .env.auth file
+
+
+```
+AWS_ACCOUNT_NUMBER="<aws_ccount_number>"
+ROLE_ARN="arn:aws:iam::<aws_ccount_number>:role/InfraDeployAccess"
+```
+
+Make sure the Role to assume exists in the AWS account and has the correct permissions to delete the default VPCs.
+
 
 **Usage:**
 
+Run the command below!
 ```
 python remove_vpc.py
 ```

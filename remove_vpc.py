@@ -9,7 +9,8 @@ Boto3 Version: 1.7.50
 
 import boto3
 from botocore.exceptions import ClientError
-
+from dotenv import load_dotenv
+import os
 
 def delete_igw(ec2, vpc_id):
   """
@@ -34,12 +35,12 @@ def delete_igw(ec2, vpc_id):
     igw_id = igw[0]['InternetGatewayId']
 
     try:
-      result = ec2.detach_internet_gateway(InternetGatewayId=igw_id, VpcId=vpc_id)
+      ec2.detach_internet_gateway(InternetGatewayId=igw_id, VpcId=vpc_id)
     except ClientError as e:
       print(e.response['Error']['Message'])
 
     try:
-      result = ec2.delete_internet_gateway(InternetGatewayId=igw_id)
+      ec2.delete_internet_gateway(InternetGatewayId=igw_id)
     except ClientError as e:
       print(e.response['Error']['Message'])
 
@@ -61,7 +62,7 @@ def delete_subs(ec2, args):
       sub_id = sub['SubnetId']
 
       try:
-        result = ec2.delete_subnet(SubnetId=sub_id)
+        ec2.delete_subnet(SubnetId=sub_id)
       except ClientError as e:
         print(e.response['Error']['Message'])
 
@@ -88,7 +89,7 @@ def delete_rtbs(ec2, args):
       rtb_id = rtb['RouteTableId']
         
       try:
-        result = ec2.delete_route_table(RouteTableId=rtb_id)
+        ec2.delete_route_table(RouteTableId=rtb_id)
       except ClientError as e:
         print(e.response['Error']['Message'])
 
@@ -113,7 +114,7 @@ def delete_acls(ec2, args):
       acl_id = acl['NetworkAclId']
 
       try:
-        result = ec2.delete_network_acl(NetworkAclId=acl_id)
+        ec2.delete_network_acl(NetworkAclId=acl_id)
       except ClientError as e:
         print(e.response['Error']['Message'])
 
@@ -138,27 +139,26 @@ def delete_sgps(ec2, args):
       sg_id = sgp['GroupId']
 
       try:
-        result = ec2.delete_security_group(GroupId=sg_id)
+        ec2.delete_security_group(GroupId=sg_id)
       except ClientError as e:
         print(e.response['Error']['Message'])
 
   return
 
 
-def delete_vpc(ec2, vpc_id, region):
+def delete_vpc(ec2, vpc_id, region, count):
   """
   Delete the VPC
   """
 
   try:
-    result = ec2.delete_vpc(VpcId=vpc_id)
+    ec2.delete_vpc(VpcId=vpc_id)
   except ClientError as e:
     print(e.response['Error']['Message'])
-
+    return False
   else:
-    print('VPC {} has been deleted from the {} region.'.format(vpc_id, region))
-
-  return
+    print('#{} - {} has been deleted from the {} region.'.format(count, vpc_id, region))
+    return True
 
 
 def get_regions(ec2):
@@ -179,8 +179,29 @@ def get_regions(ec2):
 
   return regions
 
+# Function definitions remain the same...
 
-def main(profile):
+def assume_role(role_arn, session_name):
+  """
+  Assumes the specified role and returns the temporary credentials.
+  """
+  sts_client = boto3.client('sts',
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    aws_session_token=os.getenv('AWS_SESSION_TOKEN'),  # This may be None if not using session tokens
+    region_name=os.getenv('AWS_REGION')
+  )
+  try:
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=role_arn,
+        RoleSessionName=session_name
+    )
+    return assumed_role_object['Credentials']
+  except ClientError as e:
+    print(f"Failed to assume role: {e}")
+    exit(1)
+
+def main():
   """
   Do the work..
 
@@ -197,10 +218,26 @@ def main(profile):
   # AWS Credentials
   # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
 
-  session = boto3.Session(profile_name=profile)
+  # Load environment variables from .env.auth file
+  dotenv_path = os.path.join(os.path.dirname(__file__), '.env.auth')
+  load_dotenv(dotenv_path=dotenv_path)
+  
+  role_arn = os.getenv('ROLE_ARN')
+  session_name = "AssumedRoleSession"
+
+  credentials = assume_role(role_arn, session_name)
+
+  session = boto3.Session(
+      aws_access_key_id=credentials['AccessKeyId'],
+      aws_secret_access_key=credentials['SecretAccessKey'],
+      aws_session_token=credentials['SessionToken'],
+      region_name=os.getenv('AWS_REGION')
+  )
+
   ec2 = session.client('ec2', region_name='us-east-1')
 
   regions = get_regions(ec2)
+  deleted_vpcs_count = 1
 
   for region in regions:
 
@@ -240,17 +277,18 @@ def main(profile):
       print('VPC {} has existing resources in the {} region.'.format(vpc_id, region))
       continue
 
-    result = delete_igw(ec2, vpc_id)
-    result = delete_subs(ec2, args)
-    result = delete_rtbs(ec2, args)
-    result = delete_acls(ec2, args)
-    result = delete_sgps(ec2, args)
-    result = delete_vpc(ec2, vpc_id, region)
+    delete_igw(ec2, vpc_id)
+    delete_subs(ec2, args)
+    delete_rtbs(ec2, args)
+    delete_acls(ec2, args)
+    delete_sgps(ec2, args)
+    
+    if delete_vpc(ec2, vpc_id, region, deleted_vpcs_count):
+      deleted_vpcs_count += 1
 
   return
 
 
 if __name__ == "__main__":
-
-  main(profile = '<YOUR_PROFILE>')
+  main()
 
